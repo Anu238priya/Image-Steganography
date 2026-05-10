@@ -2,15 +2,8 @@ import { useState, useRef, useEffect } from "react";
 
 export default function App() {
   const [page, setPage] = useState("home");
-  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    const auth = localStorage.getItem("auth");
-
-    if (auth === "true") {
-      setLoggedIn(true);
-    }
-
     const style = document.createElement("style");
 
     style.innerHTML = `
@@ -55,24 +48,11 @@ export default function App() {
     document.head.appendChild(link);
   }, []);
 
-  if (!loggedIn) {
-    return <Auth onLogin={() => setLoggedIn(true)} />;
-  }
-
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>🔐 Steganography</h1>
-
-      <button
-        style={styles.logout}
-        onClick={() => {
-          localStorage.removeItem("auth");
-          localStorage.removeItem("currentUser");
-          setLoggedIn(false);
-        }}
-      >
-        Logout
-      </button>
+      <h1 style={styles.title}>
+        🔐 Image Steganography
+      </h1>
 
       {page === "home" && (
         <>
@@ -103,248 +83,23 @@ export default function App() {
   );
 }
 
-function Auth({ onLogin }) {
-  const [isLogin, setIsLogin] = useState(true);
-
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [error, setError] = useState("");
-
-  const validatePassword = (pass) => {
-    const strongPassword =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-
-    return strongPassword.test(pass);
-  };
-
-  const validateEmail = (email) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
-
-  const handleRegister = () => {
-    setError("");
-
-    if (
-      !username ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
-      setError("Please fill all fields");
-      return;
-    }
-
-    if (username.length < 3) {
-      setError(
-        "Username must contain at least 3 characters"
-      );
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Invalid email address");
-      return;
-    }
-
-    if (!validatePassword(password)) {
-      setError(
-        "Password must contain uppercase, lowercase and number"
-      );
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    let users =
-      JSON.parse(localStorage.getItem("users")) || [];
-
-    const userExists = users.find(
-      (u) =>
-        u.username === username || u.email === email
-    );
-
-    if (userExists) {
-      setError("User already exists");
-      return;
-    }
-
-    const newUser = {
-      username,
-      email,
-      password,
-      createdAt: new Date().toLocaleString(),
-    };
-
-    users.push(newUser);
-
-    localStorage.setItem(
-      "users",
-      JSON.stringify(users)
-    );
-
-    alert("Registration Successful!");
-
-    setUsername("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-
-    setIsLogin(true);
-  };
-
-  const handleLogin = () => {
-    setError("");
-
-    if (!username || !password) {
-      setError("Enter username and password");
-      return;
-    }
-
-    let users =
-      JSON.parse(localStorage.getItem("users")) || [];
-
-    const validUser = users.find(
-      (u) =>
-        u.username === username &&
-        u.password === password
-    );
-
-    if (!validUser) {
-      setError("Invalid login credentials");
-      return;
-    }
-
-    localStorage.setItem("auth", "true");
-
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify(validUser)
-    );
-
-    onLogin();
-  };
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.authCard}>
-        <div style={styles.authTop}>
-          <h1 style={styles.authTitle}>
-            🔐 Secure Steganography
-          </h1>
-
-          <p style={styles.authSubtitle}>
-            {isLogin
-              ? "Login to continue"
-              : "Create a secure account"}
-          </p>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          style={styles.input}
-          onChange={(e) =>
-            setUsername(e.target.value)
-          }
-        />
-
-        {!isLogin && (
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            style={styles.input}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
-          />
-        )}
-
-        <div style={styles.passwordWrapper}>
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={password}
-            style={styles.passwordInput}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-          />
-
-          <span
-            style={styles.eyeBtn}
-            onClick={() =>
-              setShowPassword(!showPassword)
-            }
-          >
-            {showPassword ? "🙈" : "👁"}
-          </span>
-        </div>
-
-        {!isLogin && (
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            style={styles.input}
-            onChange={(e) =>
-              setConfirmPassword(e.target.value)
-            }
-          />
-        )}
-
-        {error && (
-          <div style={styles.errorBox}>
-            {error}
-          </div>
-        )}
-
-        <button
-          style={styles.authButton}
-          onClick={
-            isLogin
-              ? handleLogin
-              : handleRegister
-          }
-        >
-          {isLogin ? "Login" : "Register"}
-        </button>
-
-        <p
-          style={styles.switchText}
-          onClick={() => {
-            setError("");
-            setIsLogin(!isLogin);
-          }}
-        >
-          {isLogin
-            ? "New user? Create account"
-            : "Already have an account? Login"}
-        </p>
-      </div>
-    </div>
-  );
-}
+// ================= ENCODE =================
 
 function Encode({ goHome }) {
   const [image2, setImage2] = useState(null);
+
   const [image1, setImage1] = useState(null);
+
   const [message, setMessage] = useState("");
+
   const [password, setPassword] = useState("");
+
   const [output, setOutput] = useState(null);
+
   const [processing, setProcessing] = useState(false);
+
   const [processText, setProcessText] = useState("");
+
   const [cleanPreview, setCleanPreview] =
     useState(null);
 
@@ -398,9 +153,11 @@ function Encode({ goHome }) {
     const ctx = canvas.getContext("2d");
 
     let img2 = await loadImage(image2);
+
     let img1 = await loadImage(image1);
 
     canvas.width = img2.width;
+
     canvas.height = img2.height;
 
     ctx.drawImage(img2, 0, 0);
@@ -417,6 +174,7 @@ function Encode({ goHome }) {
     let tctx = tempCanvas.getContext("2d");
 
     tempCanvas.width = canvas.width;
+
     tempCanvas.height = canvas.height;
 
     tctx.drawImage(
@@ -436,6 +194,7 @@ function Encode({ goHome }) {
 
     let d = imgData.data;
 
+    // Hide Image
     for (let i = 0; i < d.length; i += 4) {
       d[i] = (d[i] & 0b11111100) | (hiddenData[i] >> 6);
 
@@ -448,6 +207,7 @@ function Encode({ goHome }) {
         (hiddenData[i + 2] >> 6);
     }
 
+    // Hide Message
     let full = message + "||" + password + "###";
 
     let binary = full
@@ -476,6 +236,7 @@ function Encode({ goHome }) {
     let link = document.createElement("a");
 
     link.download = "encoded.png";
+
     link.href = url;
 
     link.click();
@@ -485,7 +246,7 @@ function Encode({ goHome }) {
     <div style={styles.card}>
       <h2>Encode</h2>
 
-      <p>Select Cover</p>
+      <p>Select Cover Image</p>
 
       <input
         type="file"
@@ -533,7 +294,7 @@ function Encode({ goHome }) {
         </div>
       )}
 
-      <p>Select Hidden</p>
+      <p>Select Hidden Image</p>
 
       <input
         type="file"
@@ -582,7 +343,10 @@ function Encode({ goHome }) {
         </>
       )}
 
-      <button style={styles.backBtn} onClick={goHome}>
+      <button
+        style={styles.backBtn}
+        onClick={goHome}
+      >
         Back
       </button>
 
@@ -594,17 +358,168 @@ function Encode({ goHome }) {
   );
 }
 
+// ================= DECODE =================
+
 function Decode({ goHome }) {
+  const [file, setFile] = useState(null);
+
+  const [decodedImage, setDecodedImage] =
+    useState(null);
+
+  const [message, setMessage] = useState("");
+
+  const [revealed, setRevealed] = useState(false);
+
+  const canvasRef = useRef();
+
+  const loadImage = (file) =>
+    new Promise((resolve) => {
+      let img = new Image();
+
+      img.onload = () => resolve(img);
+
+      img.src = URL.createObjectURL(file);
+    });
+
+  const extractData = async (file, passInput) => {
+    const canvas = canvasRef.current;
+
+    const ctx = canvas.getContext("2d");
+
+    let img = await loadImage(file);
+
+    canvas.width = img.width;
+
+    canvas.height = img.height;
+
+    ctx.drawImage(img, 0, 0);
+
+    let data = ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    ).data;
+
+    let binary = "";
+
+    let text = "";
+
+    for (let i = 0; i < data.length; i += 4) {
+      binary += data[i] & 1;
+
+      if (binary.length % 8 === 0) {
+        let char = String.fromCharCode(
+          parseInt(binary.slice(-8), 2)
+        );
+
+        text += char;
+
+        if (text.includes("###")) break;
+      }
+    }
+
+    let clean = text.replace("###", "");
+
+    let [msg, pass] = clean.split("||");
+
+    if (pass !== passInput) {
+      alert("Wrong Password");
+      return;
+    }
+
+    setMessage(msg);
+
+    let outCanvas =
+      document.createElement("canvas");
+
+    let octx = outCanvas.getContext("2d");
+
+    outCanvas.width = canvas.width;
+
+    outCanvas.height = canvas.height;
+
+    let out = octx.createImageData(
+      canvas.width,
+      canvas.height
+    );
+
+    let o = out.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      o[i] = (data[i] & 3) << 6;
+
+      o[i + 1] = (data[i + 1] & 3) << 6;
+
+      o[i + 2] = (data[i + 2] & 3) << 6;
+
+      o[i + 3] = 255;
+    }
+
+    octx.putImageData(out, 0, 0);
+
+    setDecodedImage(outCanvas.toDataURL());
+
+    setRevealed(true);
+  };
+
   return (
     <div style={styles.card}>
-      <h2>Decode Viewer</h2>
+      <h2>Secure Viewer</h2>
 
-      <button style={styles.backBtn} onClick={goHome}>
+      <input
+        type="file"
+        style={styles.fileInput}
+        onChange={(e) =>
+          setFile(e.target.files[0])
+        }
+      />
+
+      {file && (
+        <div
+          onDoubleClick={() => {
+            let pass =
+              prompt("Enter Password");
+
+            if (pass) {
+              extractData(file, pass);
+            }
+          }}
+        >
+          <img
+            src={
+              revealed
+                ? decodedImage
+                : URL.createObjectURL(file)
+            }
+            alt="Decoded Output"
+            style={styles.outputImage}
+          />
+        </div>
+      )}
+
+      {message && (
+        <p style={styles.message}>
+          <b>Message:</b> {message}
+        </p>
+      )}
+
+      <button
+        style={styles.backBtn}
+        onClick={goHome}
+      >
         Back
       </button>
+
+      <canvas
+        ref={canvasRef}
+        style={{ display: "none" }}
+      />
     </div>
   );
 }
+
+// ================= STYLES =================
 
 const styles = {
   container: {
@@ -632,26 +547,6 @@ const styles = {
     margin: "auto",
   },
 
-  authCard: {
-    width: "420px",
-    margin: "auto",
-    padding: "35px",
-    borderRadius: "28px",
-    background: "rgba(255,255,255,0.08)",
-  },
-
-  authTop: {
-    marginBottom: "25px",
-  },
-
-  authTitle: {
-    fontSize: "32px",
-  },
-
-  authSubtitle: {
-    color: "#cbd5e1",
-  },
-
   input: {
     width: "100%",
     padding: "12px",
@@ -660,47 +555,7 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.15)",
     background: "rgba(255,255,255,0.08)",
     color: "white",
-  },
-
-  passwordWrapper: {
-    position: "relative",
-  },
-
-  passwordInput: {
-    width: "100%",
-    padding: "12px",
-    margin: "12px 0",
-    borderRadius: "12px",
-  },
-
-  eyeBtn: {
-    position: "absolute",
-    right: "15px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    cursor: "pointer",
-  },
-
-  authButton: {
-    width: "100%",
-    padding: "14px",
-    border: "none",
-    borderRadius: "14px",
-    color: "white",
-    cursor: "pointer",
-    background:
-      "linear-gradient(135deg,#06b6d4,#3b82f6,#8b5cf6)",
-  },
-
-  switchText: {
-    marginTop: "18px",
-    cursor: "pointer",
-  },
-
-  errorBox: {
-    background: "rgba(239,68,68,0.15)",
-    padding: "10px",
-    borderRadius: "12px",
+    boxSizing: "border-box",
   },
 
   fileInput: {
@@ -714,6 +569,7 @@ const styles = {
     borderRadius: "14px",
     cursor: "pointer",
     color: "white",
+    margin: "10px",
     background:
       "linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)",
   },
@@ -727,17 +583,6 @@ const styles = {
     marginTop: "18px",
     background:
       "linear-gradient(135deg, #ef4444, #f97316)",
-  },
-
-  logout: {
-    position: "absolute",
-    top: "18px",
-    right: "18px",
-    padding: "10px 18px",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-    color: "white",
   },
 
   preview: {
@@ -754,6 +599,7 @@ const styles = {
     width: "300px",
     marginTop: "15px",
     borderRadius: "18px",
+    cursor: "pointer",
   },
 
   processBox: {
@@ -771,5 +617,13 @@ const styles = {
     borderRadius: "50%",
     margin: "12px auto",
     animation: "spin 1s linear infinite",
+  },
+
+  message: {
+    marginTop: "20px",
+    color: "#f8fafc",
+    background: "rgba(255,255,255,0.08)",
+    padding: "12px",
+    borderRadius: "12px",
   },
 };
