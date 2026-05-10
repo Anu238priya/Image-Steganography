@@ -11,7 +11,6 @@ export default function App() {
       setLoggedIn(true);
     }
 
-    // Animation Styles
     const style = document.createElement("style");
 
     style.innerHTML = `
@@ -51,7 +50,6 @@ export default function App() {
 
     document.head.appendChild(style);
 
-    // Google Font
     const link = document.createElement("link");
 
     link.href =
@@ -110,8 +108,6 @@ export default function App() {
   );
 }
 
-// ================= AUTH =================
-
 function Auth({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
 
@@ -129,8 +125,6 @@ function Auth({ onLogin }) {
 
   const [error, setError] = useState("");
 
-  // ================= VALIDATION =================
-
   const validatePassword = (pass) => {
     const strongPassword =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
@@ -141,8 +135,6 @@ function Auth({ onLogin }) {
   const validateEmail = (email) => {
     return /\S+@\S+\.\S+/.test(email);
   };
-
-  // ================= REGISTER =================
 
   const handleRegister = () => {
     setError("");
@@ -218,8 +210,6 @@ function Auth({ onLogin }) {
     setIsLogin(true);
   };
 
-  // ================= LOGIN =================
-
   const handleLogin = () => {
     setError("");
 
@@ -267,8 +257,6 @@ function Auth({ onLogin }) {
           </p>
         </div>
 
-        {/* USERNAME */}
-
         <input
           type="text"
           placeholder="Username"
@@ -278,8 +266,6 @@ function Auth({ onLogin }) {
             setUsername(e.target.value)
           }
         />
-
-        {/* EMAIL */}
 
         {!isLogin && (
           <input
@@ -292,8 +278,6 @@ function Auth({ onLogin }) {
             }
           />
         )}
-
-        {/* PASSWORD */}
 
         <div style={styles.passwordWrapper}>
           <input
@@ -316,8 +300,6 @@ function Auth({ onLogin }) {
           </span>
         </div>
 
-        {/* CONFIRM PASSWORD */}
-
         {!isLogin && (
           <input
             type="password"
@@ -330,15 +312,11 @@ function Auth({ onLogin }) {
           />
         )}
 
-        {/* ERROR */}
-
         {error && (
           <div style={styles.errorBox}>
             {error}
           </div>
         )}
-
-        {/* BUTTON */}
 
         <button
           style={styles.authButton}
@@ -350,8 +328,6 @@ function Auth({ onLogin }) {
         >
           {isLogin ? "Login" : "Register"}
         </button>
-
-        {/* SWITCH */}
 
         <p
           style={styles.switchText}
@@ -368,8 +344,6 @@ function Auth({ onLogin }) {
     </div>
   );
 }
-
-// ================= ENCODE =================
 
 function Encode({ goHome }) {
   const [image2, setImage2] = useState(null);
@@ -400,8 +374,6 @@ function Encode({ goHome }) {
       img.src = URL.createObjectURL(file);
     });
 
-  // ================= IMAGE CLEANING =================
-
   const simulateCleaning = async (file) => {
     setProcessing(true);
 
@@ -427,8 +399,6 @@ function Encode({ goHome }) {
       setProcessing(false);
     }, 1000);
   };
-
-  // ================= ENCODE =================
 
   const encode = async () => {
     if (!image1 || !image2 || !message || !password) {
@@ -465,7 +435,13 @@ function Encode({ goHome }) {
 
     tempCanvas.height = canvas.height;
 
-    tctx.drawImage(img1, 0, 0, canvas.width, canvas.height);
+    tctx.drawImage(
+      img1,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
     let hiddenData = tctx.getImageData(
       0,
@@ -475,8 +451,6 @@ function Encode({ goHome }) {
     ).data;
 
     let d = imgData.data;
-
-    // Hide Image
 
     for (let i = 0; i < d.length; i += 4) {
       d[i] = (d[i] & 0b11111100) | (hiddenData[i] >> 6);
@@ -490,8 +464,6 @@ function Encode({ goHome }) {
         (hiddenData[i + 2] >> 6);
     }
 
-    // Hide Message
-
     let full = message + "||" + password + "###";
 
     let binary = full
@@ -503,7 +475,11 @@ function Encode({ goHome }) {
 
     let j = 0;
 
-    for (let i = 0; i < d.length && j < binary.length; i += 4) {
+    for (
+      let i = 0;
+      i < d.length && j < binary.length;
+      i += 4
+    ) {
       d[i] = (d[i] & 254) | binary[j++];
     }
 
@@ -545,6 +521,7 @@ function Encode({ goHome }) {
       {image2 && (
         <img
           src={URL.createObjectURL(image2)}
+          alt="Cover Preview"
           width="140"
           style={styles.preview}
         />
@@ -566,6 +543,7 @@ function Encode({ goHome }) {
 
           <img
             src={cleanPreview}
+            alt="Cleaned Preview"
             width="220"
             style={styles.cleanedPreview}
           />
@@ -583,6 +561,7 @@ function Encode({ goHome }) {
       {image1 && (
         <img
           src={URL.createObjectURL(image1)}
+          alt="Hidden Image Preview"
           width="140"
           style={styles.preview}
         />
@@ -613,6 +592,7 @@ function Encode({ goHome }) {
 
           <img
             src={output}
+            alt="Encoded Output"
             width="300"
             style={styles.outputImage}
           />
@@ -627,8 +607,6 @@ function Encode({ goHome }) {
     </div>
   );
 }
-
-// ================= DECODE =================
 
 function Decode({ goHome }) {
   const [file, setFile] = useState(null);
@@ -758,6 +736,7 @@ function Decode({ goHome }) {
                 ? decodedImage
                 : URL.createObjectURL(file)
             }
+            alt="Decoded Preview"
             style={styles.outputImage}
           />
         </div>
@@ -778,8 +757,6 @@ function Decode({ goHome }) {
   );
 }
 
-// ================= STYLES =================
-
 const styles = {
   container: {
     textAlign: "center",
@@ -789,217 +766,5 @@ const styles = {
     background:
       "linear-gradient(135deg, #0f172a, #1e1b4b, #312e81, #4c1d95)",
     fontFamily: "Poppins, sans-serif",
-  },
-
-  title: {
-    fontSize: "42px",
-    marginBottom: "30px",
-    fontWeight: "bold",
-    background:
-      "linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  },
-
-  card: {
-    background: "rgba(255,255,255,0.08)",
-    backdropFilter: "blur(14px)",
-    padding: "30px",
-    borderRadius: "24px",
-    width: "430px",
-    margin: "auto",
-    boxShadow:
-      "0 8px 32px rgba(0,0,0,0.35), 0 0 20px rgba(139,92,246,0.25)",
-    border: "1px solid rgba(255,255,255,0.12)",
-  },
-
-  authCard: {
-    width: "420px",
-    margin: "auto",
-    padding: "35px",
-    borderRadius: "28px",
-    background: "rgba(255,255,255,0.08)",
-    backdropFilter: "blur(16px)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    boxShadow:
-      "0 8px 32px rgba(0,0,0,0.35), 0 0 20px rgba(139,92,246,0.25)",
-  },
-
-  authTop: {
-    marginBottom: "25px",
-  },
-
-  authTitle: {
-    fontSize: "32px",
-    marginBottom: "8px",
-    background:
-      "linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  },
-
-  authSubtitle: {
-    color: "#cbd5e1",
-    fontSize: "14px",
-  },
-
-  input: {
-    width: "100%",
-    padding: "12px",
-    margin: "12px 0",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    outline: "none",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-    fontSize: "15px",
-    boxSizing: "border-box",
-  },
-
-  passwordWrapper: {
-    position: "relative",
-    width: "100%",
-  },
-
-  passwordInput: {
-    width: "100%",
-    padding: "12px",
-    margin: "12px 0",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    outline: "none",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-    fontSize: "15px",
-    boxSizing: "border-box",
-  },
-
-  eyeBtn: {
-    position: "absolute",
-    right: "15px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    cursor: "pointer",
-    fontSize: "18px",
-  },
-
-  authButton: {
-    width: "100%",
-    padding: "14px",
-    background:
-      "linear-gradient(135deg,#06b6d4,#3b82f6,#8b5cf6)",
-    border: "none",
-    borderRadius: "14px",
-    color: "white",
-    fontWeight: "bold",
-    fontSize: "16px",
-    cursor: "pointer",
-    marginTop: "10px",
-  },
-
-  switchText: {
-    marginTop: "18px",
-    color: "#cbd5e1",
-    cursor: "pointer",
-    fontSize: "14px",
-  },
-
-  errorBox: {
-    background: "rgba(239,68,68,0.15)",
-    border: "1px solid rgba(239,68,68,0.4)",
-    color: "#fecaca",
-    padding: "10px",
-    borderRadius: "12px",
-    marginTop: "10px",
-    fontSize: "14px",
-  },
-
-  fileInput: {
-    margin: "12px 0",
-    color: "white",
-  },
-
-  btn: {
-    padding: "12px 22px",
-    background:
-      "linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6)",
-    border: "none",
-    margin: "10px",
-    borderRadius: "14px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    color: "white",
-    fontSize: "15px",
-  },
-
-  backBtn: {
-    padding: "12px 22px",
-    background:
-      "linear-gradient(135deg, #ef4444, #f97316)",
-    border: "none",
-    marginTop: "18px",
-    borderRadius: "14px",
-    cursor: "pointer",
-    color: "white",
-    fontWeight: "bold",
-    fontSize: "15px",
-  },
-
-  logout: {
-    position: "absolute",
-    top: "18px",
-    right: "18px",
-    padding: "10px 18px",
-    background:
-      "linear-gradient(135deg,#f59e0b,#ef4444)",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-    color: "white",
-    fontWeight: "bold",
-  },
-
-  preview: {
-    marginTop: "12px",
-    borderRadius: "16px",
-    border: "2px solid rgba(255,255,255,0.15)",
-  },
-
-  cleanedPreview: {
-    border: "3px solid #22d3ee",
-    borderRadius: "16px",
-    marginTop: "10px",
-  },
-
-  outputImage: {
-    width: "300px",
-    marginTop: "15px",
-    borderRadius: "18px",
-    cursor: "pointer",
-  },
-
-  processBox: {
-    marginTop: "18px",
-    padding: "18px",
-    background: "rgba(255,255,255,0.08)",
-    borderRadius: "18px",
-  },
-
-  loader: {
-    width: "48px",
-    height: "48px",
-    border: "5px solid rgba(255,255,255,0.2)",
-    borderTop: "5px solid #22d3ee",
-    borderRadius: "50%",
-    margin: "12px auto",
-    animation: "spin 1s linear infinite",
-  },
-
-  message: {
-    marginTop: "20px",
-    color: "#f8fafc",
-    background: "rgba(255,255,255,0.08)",
-    padding: "12px",
-    borderRadius: "12px",
   },
 };
