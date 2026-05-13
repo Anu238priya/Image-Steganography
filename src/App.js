@@ -103,12 +103,16 @@ function Encode({ goHome }) {
   const [cleanPreview, setCleanPreview] =
     useState(null);
 
-  const [showROISelector, setShowROISelector] =
-    useState(false);
-
   const [roiBox, setRoiBox] = useState(null);
 
+  const [drawing, setDrawing] = useState(false);
+
+  const [startPoint, setStartPoint] =
+    useState(null);
+
   const canvasRef = useRef();
+
+  const roiRef = useRef();
 
   const loadImage = (file) =>
     new Promise((resolve) => {
@@ -142,11 +146,57 @@ function Encode({ goHome }) {
 
     setProcessText("Completed!");
 
-    setShowROISelector(true);
-
     setTimeout(() => {
       setProcessing(false);
     }, 1000);
+  };
+
+  const startDrawing = (e) => {
+    const rect =
+      roiRef.current.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+
+    const y = e.clientY - rect.top;
+
+    setStartPoint({ x, y });
+
+    setDrawing(true);
+
+    setRoiBox({
+      x,
+      y,
+      width: 0,
+      height: 0,
+    });
+  };
+
+  const drawROI = (e) => {
+    if (!drawing) return;
+
+    const rect =
+      roiRef.current.getBoundingClientRect();
+
+    const currentX =
+      e.clientX - rect.left;
+
+    const currentY =
+      e.clientY - rect.top;
+
+    setRoiBox({
+      x: Math.min(startPoint.x, currentX),
+      y: Math.min(startPoint.y, currentY),
+      width: Math.abs(
+        currentX - startPoint.x
+      ),
+      height: Math.abs(
+        currentY - startPoint.y
+      ),
+    });
+  };
+
+  const stopDrawing = () => {
+    setDrawing(false);
   };
 
   const encode = async () => {
@@ -176,9 +226,11 @@ function Encode({ goHome }) {
       canvas.height
     );
 
-    let tempCanvas = document.createElement("canvas");
+    let tempCanvas =
+      document.createElement("canvas");
 
-    let tctx = tempCanvas.getContext("2d");
+    let tctx =
+      tempCanvas.getContext("2d");
 
     tempCanvas.width = canvas.width;
 
@@ -203,7 +255,9 @@ function Encode({ goHome }) {
 
     // Hide Image
     for (let i = 0; i < d.length; i += 4) {
-      d[i] = (d[i] & 0b11111100) | (hiddenData[i] >> 6);
+      d[i] =
+        (d[i] & 0b11111100) |
+        (hiddenData[i] >> 6);
 
       d[i + 1] =
         (d[i + 1] & 0b11111100) |
@@ -215,12 +269,15 @@ function Encode({ goHome }) {
     }
 
     // Hide Message
-    let full = message + "||" + password + "###";
+    let full =
+      message + "||" + password + "###";
 
     let binary = full
       .split("")
       .map((c) =>
-        c.charCodeAt(0).toString(2).padStart(8, "0")
+        c.charCodeAt(0)
+          .toString(2)
+          .padStart(8, "0")
       )
       .join("");
 
@@ -240,7 +297,8 @@ function Encode({ goHome }) {
 
     setOutput(url);
 
-    let link = document.createElement("a");
+    let link =
+      document.createElement("a");
 
     link.download = "encoded.png";
 
@@ -292,7 +350,18 @@ function Encode({ goHome }) {
             Cleaned Preview
           </h4>
 
-          <div style={styles.roiContainer}>
+          <p style={styles.roiText}>
+            Drag Mouse to Select ROI
+          </p>
+
+          <div
+            ref={roiRef}
+            style={styles.roiContainer}
+            onMouseDown={startDrawing}
+            onMouseMove={drawROI}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+          >
             <img
               src={cleanPreview}
               alt="Cleaned Preview"
@@ -306,33 +375,17 @@ function Encode({ goHome }) {
                   ...styles.roiBox,
                   left: roiBox.x,
                   top: roiBox.y,
-                  width: roiBox.w,
-                  height: roiBox.h,
+                  width: roiBox.width,
+                  height: roiBox.height,
                 }}
               />
             )}
           </div>
 
-          {showROISelector && (
-            <>
-              <p style={styles.roiText}>
-                Select ROI Area Manually
-              </p>
-
-              <button
-                style={styles.btn}
-                onClick={() =>
-                  setRoiBox({
-                    x: 70,
-                    y: 50,
-                    w: 120,
-                    h: 90,
-                  })
-                }
-              >
-                Select ROI
-              </button>
-            </>
+          {roiBox && (
+            <p style={styles.selectedText}>
+              ROI Selected Successfully
+            </p>
           )}
         </div>
       )}
@@ -342,7 +395,9 @@ function Encode({ goHome }) {
       <input
         type="file"
         style={styles.fileInput}
-        onChange={(e) => setImage1(e.target.files[0])}
+        onChange={(e) =>
+          setImage1(e.target.files[0])
+        }
       />
 
       {image1 && (
@@ -357,17 +412,24 @@ function Encode({ goHome }) {
       <textarea
         placeholder="Secret Message"
         style={styles.input}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) =>
+          setMessage(e.target.value)
+        }
       />
 
       <input
         type="password"
         placeholder="Password"
         style={styles.input}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) =>
+          setPassword(e.target.value)
+        }
       />
 
-      <button style={styles.btn} onClick={encode}>
+      <button
+        style={styles.btn}
+        onClick={encode}
+      >
         Encode
       </button>
 
@@ -424,7 +486,10 @@ function Decode({ goHome }) {
       img.src = URL.createObjectURL(file);
     });
 
-  const extractData = async (file, passInput) => {
+  const extractData = async (
+    file,
+    passInput
+  ) => {
     const canvas = canvasRef.current;
 
     const ctx = canvas.getContext("2d");
@@ -464,7 +529,8 @@ function Decode({ goHome }) {
 
     let clean = text.replace("###", "");
 
-    let [msg, pass] = clean.split("||");
+    let [msg, pass] =
+      clean.split("||");
 
     if (pass !== passInput) {
       alert("Wrong Password");
@@ -492,16 +558,20 @@ function Decode({ goHome }) {
     for (let i = 0; i < data.length; i += 4) {
       o[i] = (data[i] & 3) << 6;
 
-      o[i + 1] = (data[i + 1] & 3) << 6;
+      o[i + 1] =
+        (data[i + 1] & 3) << 6;
 
-      o[i + 2] = (data[i + 2] & 3) << 6;
+      o[i + 2] =
+        (data[i + 2] & 3) << 6;
 
       o[i + 3] = 255;
     }
 
     octx.putImageData(out, 0, 0);
 
-    setDecodedImage(outCanvas.toDataURL());
+    setDecodedImage(
+      outCanvas.toDataURL()
+    );
 
     setRevealed(true);
   };
@@ -595,8 +665,10 @@ const styles = {
     padding: "12px",
     margin: "12px 0",
     borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    background: "rgba(255,255,255,0.08)",
+    border:
+      "1px solid rgba(255,255,255,0.15)",
+    background:
+      "rgba(255,255,255,0.08)",
     color: "white",
     boxSizing: "border-box",
   },
@@ -635,7 +707,7 @@ const styles = {
 
   cleanedPreview: {
     borderRadius: "16px",
-    marginTop: "10px",
+    display: "block",
   },
 
   outputImage: {
@@ -649,23 +721,27 @@ const styles = {
     marginTop: "18px",
     padding: "18px",
     borderRadius: "18px",
-    background: "rgba(255,255,255,0.08)",
+    background:
+      "rgba(255,255,255,0.08)",
   },
 
   loader: {
     width: "48px",
     height: "48px",
-    border: "5px solid rgba(255,255,255,0.2)",
+    border:
+      "5px solid rgba(255,255,255,0.2)",
     borderTop: "5px solid #22d3ee",
     borderRadius: "50%",
     margin: "12px auto",
-    animation: "spin 1s linear infinite",
+    animation:
+      "spin 1s linear infinite",
   },
 
   message: {
     marginTop: "20px",
     color: "#f8fafc",
-    background: "rgba(255,255,255,0.08)",
+    background:
+      "rgba(255,255,255,0.08)",
     padding: "12px",
     borderRadius: "12px",
   },
@@ -673,20 +749,29 @@ const styles = {
   roiContainer: {
     position: "relative",
     display: "inline-block",
-    marginTop: "10px",
+    marginTop: "12px",
+    cursor: "crosshair",
+    userSelect: "none",
   },
 
   roiBox: {
     position: "absolute",
     border: "3px dashed #22d3ee",
-    background: "rgba(34,211,238,0.15)",
-    borderRadius: "8px",
+    background:
+      "rgba(34,211,238,0.2)",
     pointerEvents: "none",
+    borderRadius: "8px",
   },
 
   roiText: {
-    marginTop: "14px",
     color: "#c4b5fd",
+    marginTop: "10px",
     fontWeight: "500",
+  },
+
+  selectedText: {
+    color: "#22c55e",
+    marginTop: "12px",
+    fontWeight: "600",
   },
 };
