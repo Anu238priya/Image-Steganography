@@ -103,6 +103,11 @@ function Encode({ goHome }) {
   const [cleanPreview, setCleanPreview] =
     useState(null);
 
+  const [showROISelector, setShowROISelector] =
+    useState(false);
+
+  const [roiBox, setRoiBox] = useState(null);
+
   const canvasRef = useRef();
 
   const loadImage = (file) =>
@@ -136,6 +141,8 @@ function Encode({ goHome }) {
     setCleanPreview(URL.createObjectURL(file));
 
     setProcessText("Completed!");
+
+    setShowROISelector(true);
 
     setTimeout(() => {
       setProcessing(false);
@@ -285,12 +292,48 @@ function Encode({ goHome }) {
             Cleaned Preview
           </h4>
 
-          <img
-            src={cleanPreview}
-            alt="Cleaned Preview"
-            width="220"
-            style={styles.cleanedPreview}
-          />
+          <div style={styles.roiContainer}>
+            <img
+              src={cleanPreview}
+              alt="Cleaned Preview"
+              width="320"
+              style={styles.cleanedPreview}
+            />
+
+            {roiBox && (
+              <div
+                style={{
+                  ...styles.roiBox,
+                  left: roiBox.x,
+                  top: roiBox.y,
+                  width: roiBox.w,
+                  height: roiBox.h,
+                }}
+              />
+            )}
+          </div>
+
+          {showROISelector && (
+            <>
+              <p style={styles.roiText}>
+                Select ROI Area Manually
+              </p>
+
+              <button
+                style={styles.btn}
+                onClick={() =>
+                  setRoiBox({
+                    x: 70,
+                    y: 50,
+                    w: 120,
+                    h: 90,
+                  })
+                }
+              >
+                Select ROI
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -625,5 +668,25 @@ const styles = {
     background: "rgba(255,255,255,0.08)",
     padding: "12px",
     borderRadius: "12px",
+  },
+
+  roiContainer: {
+    position: "relative",
+    display: "inline-block",
+    marginTop: "10px",
+  },
+
+  roiBox: {
+    position: "absolute",
+    border: "3px dashed #22d3ee",
+    background: "rgba(34,211,238,0.15)",
+    borderRadius: "8px",
+    pointerEvents: "none",
+  },
+
+  roiText: {
+    marginTop: "14px",
+    color: "#c4b5fd",
+    fontWeight: "500",
   },
 };
